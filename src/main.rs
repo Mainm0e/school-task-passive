@@ -1,6 +1,7 @@
 use reqwest;
 use structopt::StructOpt;
 mod base_on_name;
+mod base_on_ip;
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "passive", about = "Passive Recognition Tool")]
@@ -58,6 +59,14 @@ async fn search_ip(ip_address: &str) {
     // Placeholder for searching IP address
     // You can replace this with actual API calls or other implementations
     println!("Searching IP address: {}", ip_address);
+    let ip_address = "185.98.228.13"; // Replace with the IP address you want to search
+    let result = base_on_ip::get_location(ip_address).await;
+
+    if let Ok(result) = result {
+        println!("{}", result);
+    } else {
+        println!("No results found.");
+    }
 }
 
 async fn search_username(username: &str) {
