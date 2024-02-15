@@ -1,5 +1,6 @@
 use reqwest;
 use structopt::StructOpt;
+mod base_on_name;
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "passive", about = "Passive Recognition Tool")]
@@ -42,6 +43,15 @@ async fn search_full_name(full_name: &str) {
     // Placeholder for searching full name
     // You can replace this with actual API calls or other implementations
     println!("Searching full name: {}", full_name);
+    let name_str = "Jean Dupont"; // Replace with the name you want to search
+
+    let result = base_on_name::get_people(name_str).await;
+
+    if let Some(result) = result {
+        println!("{}", result);
+    } else {
+        println!("No results found.");
+    }
 }
 
 async fn search_ip(ip_address: &str) {
