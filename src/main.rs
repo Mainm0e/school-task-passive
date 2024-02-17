@@ -72,7 +72,6 @@ async fn search_help() {
         -fn         Search with full-name
         -ip         Search with ip address
         -u          Search with username
-        
         ");
 }
 

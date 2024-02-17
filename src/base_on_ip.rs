@@ -15,6 +15,10 @@ pub async fn get_location(ip: &str) -> Option<String> {
 
     let url = format!("https://ipinfo.io/{}?token={}", ip, token); 
     let response = reqwest::get(&url).await.unwrap();
+    // check response status
+    if !response.status().is_success() {
+        return None;
+    }
     let body = response.text().await.unwrap();
     let json: serde_json::Value = serde_json::from_str(&body).unwrap();
     
