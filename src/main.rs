@@ -1,7 +1,12 @@
+use std::result;
+
 use reqwest;
 use structopt::StructOpt;
+
+use crate::base_on_username::check_username;
 mod base_on_name;
 mod base_on_ip;
+mod base_on_username;
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "passive", about = "Passive Recognition Tool")]
@@ -59,7 +64,8 @@ async fn search_username(username: &str) {
     // Placeholder for searching username
     // You can replace this with actual API calls or other implementations
     println!("Searching username: {}", username);
-    return_result(None).await;
+    let result = base_on_username::check_username(username).await;
+    return_result(result).await;
 }
 
 async fn search_help() {
