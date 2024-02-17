@@ -1,15 +1,16 @@
 use scraper::{Html, Selector};
+use serde_json::Value;
 
 pub async fn check_username(username: &str) -> Option<String>  {
     let results = vec![
-        ("github", check_github(username).await),
+       /*  ("github", check_github(username).await), */
         //("pornhub", check_pornhub(username).await),
-        ("twitter", check_twitter(username).await),
-        ("youtube", check_youtube(username).await),
+        ("codecademy", check_codecademy(username).await),
+       /*  ("reddit", check_reddit(username).await),
         ("tiktok", check_tiktok(username).await),
-        ("instagram", check_instagram(username).await),
-        ("linkedin", check_linkedin(username).await),
-        ("onlyfan", check_onlyfan(username).await)
+        ("instagram", check_instagram(username).await), */
+       // ("linkedin", check_linkedin(username).await),
+        //("onlyfan", check_onlyfan(username).await)
     ];
     let mut result_string = String::new();
 
@@ -49,6 +50,8 @@ async fn check_github(username: &str) -> Option<bool> {
     }
 }
 
+
+// todo : not working
 async fn check_pornhub(username: &str) -> Option<bool> {
     let url = format!("https://pornhub.com/users/{}", username);
     let response = reqwest::get(&url).await.ok()?;
@@ -62,21 +65,83 @@ async fn check_pornhub(username: &str) -> Option<bool> {
 }
 
 // Implement similar functions for other platforms...
+// todo : not working
+async fn check_codecademy(username: &str) -> Option<bool> {
+    let url = format!("https://www.codecademy.com/profiles/{}/", username);
+    let mut headers = reqwest::header::HeaderMap::new();
+    headers.insert(
+        reqwest::header::USER_AGENT, reqwest::header::HeaderValue::from_static(
+        "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Mobile Safari/537.36"
+    ));
+    // Make a GET request to the URL with custom headers
+    let response = match reqwest::Client::builder().default_headers(headers).build().unwrap().get(&url).send().await {
+        Ok(response) => response,
+        Err(error) => {
+            eprintln!("Error making request: {}", error);
+            return None;
+        }
+    };
 
-async fn check_twitter(username: &str) -> Option<bool> {
-    // Your Twitter checking logic here
-    // Example: Dummy logic, replace it with actual implementation
-    tokio::time::sleep(tokio::time::Duration::from_secs(1)).await; // Simulate asynchronous task
-    Some(true)
+    if response.status().is_success() {
+        let body = response.text().await.ok()?;
+        let document = Html::parse_document(&body);
+         // Select the script element with id "__NEXT_DATA__"
+         if let Some(script_element) = document.select(&Selector::parse("script#\\__NEXT_DATA__").unwrap()).next() {
+            // Extract the text content of the script element
+            let script_content = script_element.text().next().unwrap_or_default();
+
+            // Parse script_content as JSON
+            let next_data: Value = serde_json::from_str(&script_content).unwrap_or_default();
+            // Now you can access specific values from __NEXT_DATA__ if needed
+            if let Some(title) = next_data["props"]["pageProps"]["profile"]["type"].as_str() {
+                // Perform your desired logic with the extracted title
+                let check_word = format!("User");
+                if title == check_word {
+                    return Some(true);
+                }
+            }
+        }
+        Some(false)
+    } else {
+        Some(false)
+    }
+
 }
+async fn check_reddit(username: &str) -> Option<bool> {
+    let url = format!("https://www.reddit.com/user/{}/", username);
+    let mut headers = reqwest::header::HeaderMap::new();
+    headers.insert(
+        reqwest::header::USER_AGENT, reqwest::header::HeaderValue::from_static(
+        "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Mobile Safari/537.36"
+    ));
+    // Make a GET request to the URL with custom headers
+    let response = match reqwest::Client::builder().default_headers(headers).build().unwrap().get(&url).send().await {
+        Ok(response) => response,
+        Err(error) => {
+            eprintln!("Error making request: {}", error);
+            return None;
+        }
+    };
 
-async fn check_youtube(username: &str) -> Option<bool> {
-    // Your YouTube checking logic here
-    // Example: Dummy logic, replace it with actual implementation
-    tokio::time::sleep(tokio::time::Duration::from_secs(1)).await; // Simulate asynchronous task
-    Some(true)
+    if response.status().is_success() {
+        let body = response.text().await.ok()?;
+        let document = Html::parse_document(&body);
+        let selector = Selector::parse("h1").unwrap();
+        if let Some(element) = document.select(&selector).next() {
+            // Check if the text content of the <h1> element contains the username
+            let check_word = format!("{}", username);
+            if element.text().any(|text| text.contains(&check_word)) {
+                println!("Found username: {}", username);
+                return Some(true);
+            }
+        }
+        Some(false)
+    } else {
+        Some(false)
+    }
+
 }
-
+// todo : not working
 async fn check_tiktok(username: &str) -> Option<bool> {
     let url = format!("https://www.tiktok.com/@{}", username);
     let mut headers = reqwest::header::HeaderMap::new();
@@ -93,17 +158,25 @@ async fn check_tiktok(username: &str) -> Option<bool> {
         return None;
     }
 };
-    if response.status().is_success() {
-        if response.url().as_str() == url {
-            Some(true)
-        } else {
-            Some(false)
-        }
-    } else {
-        Some(false)
-    }
-}
+if response.status().is_success() {
+    let body = response.text().await.ok()?;
+    let document = Html::parse_document(&body);
+    
+    let title_selector = Selector::parse("title").unwrap();
 
+    if let Some(element) = document.select(&title_selector).next() {
+        // Extract text content from the title element
+        let title_text = element.text().collect::<Vec<_>>().join(" ");
+        let check_word = format!("@{}", username);
+        if title_text.contains(&check_word) {
+            return Some(true);
+        }
+    }
+    Some(false)
+} else {
+    Some(false)
+}
+}
 async fn check_instagram(username: &str) -> Option<bool> {
     let url = format!("https://www.picuki.com/profile/{}", username);
     // Create custom headers
@@ -138,14 +211,14 @@ async fn check_instagram(username: &str) -> Option<bool> {
         Some(false)
     }
 }
-
+// todo : not working
 async fn check_linkedin(username: &str) -> Option<bool> {
     // Your LinkedIn checking logic here
     // Example: Dummy logic, replace it with actual implementation
     tokio::time::sleep(tokio::time::Duration::from_secs(1)).await; // Simulate asynchronous task
     Some(true)
 }
-
+// todo : not working
 async fn check_onlyfan(username: &str) -> Option<bool> {
     // Your OnlyFans checking logic here
     // Example: Dummy logic, replace it with actual implementation
