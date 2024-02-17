@@ -43,36 +43,23 @@ async fn main() {
 async fn search_full_name(full_name: &str) {
     // Placeholder for searching full name
     // You can replace this with actual API calls or other implementations
-    println!("Searching full name: {}", full_name);
-    let name_str = "Jean Dupont"; // Replace with the name you want to search
+    let result = base_on_name::get_people(full_name).await;
 
-    let result = base_on_name::get_people(name_str).await;
-
-    if let Some(result) = result {
-        println!("{}", result);
-    } else {
-        println!("No results found.");
-    }
+    return_result(result).await;
 }
 
 async fn search_ip(ip_address: &str) {
     // Placeholder for searching IP address
     // You can replace this with actual API calls or other implementations
-    println!("Searching IP address: {}", ip_address);
-    let ip_address = "185.98.228.13"; // Replace with the IP address you want to search
     let result = base_on_ip::get_location(ip_address).await;
-
-    if let Ok(result) = result {
-        println!("{}", result);
-    } else {
-        println!("No results found.");
-    }
+    return_result(result).await;
 }
 
 async fn search_username(username: &str) {
     // Placeholder for searching username
     // You can replace this with actual API calls or other implementations
     println!("Searching username: {}", username);
+    return_result(None).await;
 }
 
 async fn search_help() {
@@ -87,6 +74,13 @@ async fn search_help() {
         -u          Search with username
         
         ");
-    // return  help
-    
 }
+
+async fn return_result(result: Option<String>) {
+    if let Some(result) = result {
+        println!("{}", result);
+    } else {
+        println!("No results found.");
+    }
+}
+
