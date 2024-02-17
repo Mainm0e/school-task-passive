@@ -3,13 +3,16 @@ use serde_json::Value;
 
 pub async fn check_username(username: &str) -> Option<String>  {
     let results = vec![
-       /*  ("github", check_github(username).await), */
-        //("pornhub", check_pornhub(username).await),
+       /* 
+       ("pornhub", check_pornhub(username).await),
+       */
+       /*
+       ("github", check_github(username).await),
+       ("tiktok", check_tiktok(username).await),
         ("codecademy", check_codecademy(username).await),
-       /*  ("reddit", check_reddit(username).await),
-        ("tiktok", check_tiktok(username).await),
+        ("reddit", check_reddit(username).await),
         ("instagram", check_instagram(username).await), */
-       // ("linkedin", check_linkedin(username).await),
+       // ("x", check_x(username).await),
         //("onlyfan", check_onlyfan(username).await)
     ];
     let mut result_string = String::new();
@@ -63,9 +66,6 @@ async fn check_pornhub(username: &str) -> Option<bool> {
     }
     Some(false)
 }
-
-// Implement similar functions for other platforms...
-// todo : not working
 async fn check_codecademy(username: &str) -> Option<bool> {
     let url = format!("https://www.codecademy.com/profiles/{}/", username);
     let mut headers = reqwest::header::HeaderMap::new();
@@ -141,7 +141,6 @@ async fn check_reddit(username: &str) -> Option<bool> {
     }
 
 }
-// todo : not working
 async fn check_tiktok(username: &str) -> Option<bool> {
     let url = format!("https://www.tiktok.com/@{}", username);
     let mut headers = reqwest::header::HeaderMap::new();
@@ -161,15 +160,20 @@ async fn check_tiktok(username: &str) -> Option<bool> {
 if response.status().is_success() {
     let body = response.text().await.ok()?;
     let document = Html::parse_document(&body);
-    
-    let title_selector = Selector::parse("title").unwrap();
+     // Select the script element with id "__NEXT_DATA__"
+     if let Some(script_element) = document.select(&Selector::parse("script#\\__UNIVERSAL_DATA_FOR_REHYDRATION__").unwrap()).next() {
+        // Extract the text content of the script element
+        let script_content = script_element.text().next().unwrap_or_default();
 
-    if let Some(element) = document.select(&title_selector).next() {
-        // Extract text content from the title element
-        let title_text = element.text().collect::<Vec<_>>().join(" ");
-        let check_word = format!("@{}", username);
-        if title_text.contains(&check_word) {
-            return Some(true);
+        // Parse script_content as JSON
+        let next_data: Value = serde_json::from_str(&script_content).unwrap_or_default();
+        // Now you can access specific values from __NEXT_DATA__ if needed
+        if let Some(unique_id) = next_data["__DEFAULT_SCOPE__"]["webapp.user-detail"]["userInfo"]["user"]["uniqueId"].as_str() {
+            // Perform your desired logic with the extracted title
+            let check_word = format!("{}", username);
+            if unique_id == check_word {
+                return Some(true);
+            }
         }
     }
     Some(false)
@@ -212,7 +216,7 @@ async fn check_instagram(username: &str) -> Option<bool> {
     }
 }
 // todo : not working
-async fn check_linkedin(username: &str) -> Option<bool> {
+async fn check_x(username: &str) -> Option<bool> {
     // Your LinkedIn checking logic here
     // Example: Dummy logic, replace it with actual implementation
     tokio::time::sleep(tokio::time::Duration::from_secs(1)).await; // Simulate asynchronous task
