@@ -6,7 +6,7 @@ pub async fn check_username(username: &str) -> Option<String>  {
         //("pornhub", check_pornhub(username).await),
         ("twitter", check_twitter(username).await),
         ("youtube", check_youtube(username).await),
-        //("facebook", check_facebook(username).await),
+        ("tiktok", check_tiktok(username).await),
         ("instagram", check_instagram(username).await),
         ("linkedin", check_linkedin(username).await),
         ("onlyfan", check_onlyfan(username).await)
@@ -77,8 +77,8 @@ async fn check_youtube(username: &str) -> Option<bool> {
     Some(true)
 }
 
-async fn check_facebook(username: &str) -> Option<bool> {
-    let url = format!("https://www.facebook.com/{}", username);
+async fn check_tiktok(username: &str) -> Option<bool> {
+    let url = format!("https://www.tiktok.com/@{}", username);
     let mut headers = reqwest::header::HeaderMap::new();
     headers.insert(
         reqwest::header::USER_AGENT, reqwest::header::HeaderValue::from_static(
@@ -94,9 +94,11 @@ async fn check_facebook(username: &str) -> Option<bool> {
     }
 };
     if response.status().is_success() {
-        let body = response.text().await.ok()?;
-        let document = Html::parse_document(&body);
-        Some(true)
+        if response.url().as_str() == url {
+            Some(true)
+        } else {
+            Some(false)
+        }
     } else {
         Some(false)
     }
