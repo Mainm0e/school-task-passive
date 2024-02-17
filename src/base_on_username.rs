@@ -3,17 +3,11 @@ use serde_json::Value;
 
 pub async fn check_username(username: &str) -> Option<String>  {
     let results = vec![
-       /* 
-       ("pornhub", check_pornhub(username).await),
-       */
-       /*
-       ("github", check_github(username).await),
-       ("tiktok", check_tiktok(username).await),
+        ("github", check_github(username).await),
+        ("tiktok", check_tiktok(username).await),
         ("codecademy", check_codecademy(username).await),
         ("reddit", check_reddit(username).await),
-        ("instagram", check_instagram(username).await), */
-       // ("x", check_x(username).await),
-        //("onlyfan", check_onlyfan(username).await)
+        ("instagram", check_instagram(username).await), 
     ];
     let mut result_string = String::new();
 
@@ -51,20 +45,6 @@ async fn check_github(username: &str) -> Option<bool> {
     } else {
         Some(false)
     }
-}
-
-
-// todo : not working
-async fn check_pornhub(username: &str) -> Option<bool> {
-    let url = format!("https://pornhub.com/users/{}", username);
-    let response = reqwest::get(&url).await.ok()?;
-    println!("{:?}", response.status());
-    if response.status().is_success() {
-        Some(true);
-    } else {
-        Some(false);
-    }
-    Some(false)
 }
 async fn check_codecademy(username: &str) -> Option<bool> {
     let url = format!("https://www.codecademy.com/profiles/{}/", username);
@@ -131,7 +111,6 @@ async fn check_reddit(username: &str) -> Option<bool> {
             // Check if the text content of the <h1> element contains the username
             let check_word = format!("{}", username);
             if element.text().any(|text| text.contains(&check_word)) {
-                println!("Found username: {}", username);
                 return Some(true);
             }
         }
@@ -214,18 +193,4 @@ async fn check_instagram(username: &str) -> Option<bool> {
     } else {
         Some(false)
     }
-}
-// todo : not working
-async fn check_x(username: &str) -> Option<bool> {
-    // Your LinkedIn checking logic here
-    // Example: Dummy logic, replace it with actual implementation
-    tokio::time::sleep(tokio::time::Duration::from_secs(1)).await; // Simulate asynchronous task
-    Some(true)
-}
-// todo : not working
-async fn check_onlyfan(username: &str) -> Option<bool> {
-    // Your OnlyFans checking logic here
-    // Example: Dummy logic, replace it with actual implementation
-    tokio::time::sleep(tokio::time::Duration::from_secs(1)).await; // Simulate asynchronous task
-    Some(true)
 }
