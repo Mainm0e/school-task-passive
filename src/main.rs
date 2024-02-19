@@ -1,9 +1,7 @@
-use std::result;
-
-use reqwest;
 use structopt::StructOpt;
+use std::fs;
+use std::io;
 
-use crate::base_on_username::check_username;
 mod base_on_name;
 mod base_on_ip;
 mod base_on_username;
@@ -84,8 +82,45 @@ async fn search_help() {
 async fn return_result(result: Option<String>) {
     if let Some(result) = result {
         println!("{}", result);
+        write_result(Some(result)).await.unwrap();
     } else {
-        println!("No results found.");
+
+        write_result(Some("".to_string())).await.unwrap();
+        println!("");
     }
 }
 
+
+async fn write_result(result: Option<String>) -> io::Result<()> {
+    // Specify the folder where the result files are stored
+    let folder_path = "results/";
+    
+    // Get a list of files in the folder
+    let entries = fs::read_dir(folder_path)?;
+
+    // Find the latest result file number
+    let latest_number = entries
+        .filter_map(|entry| {
+            entry.ok().and_then(|e| {
+                e.file_name().to_str().and_then(|name| {
+                    if name.starts_with("result_") && name.ends_with(".txt") {
+                        name.trim_start_matches("result_").trim_end_matches(".txt").parse().ok()
+                    } else {
+                        None
+                    }
+                })
+            })
+        })
+        .max()
+        .unwrap_or(0);
+
+    // Create a new result file with an incremented number
+    let new_number = latest_number + 1;
+    let new_result_file = format!("result_{}.txt", new_number);
+    let new_result_path = format!("{}/{}", folder_path, new_result_file);
+
+    // Write the result to the new result file
+    fs::write(new_result_path, result.unwrap_or_default())?;
+
+    Ok(())
+}

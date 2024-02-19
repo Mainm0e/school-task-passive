@@ -24,10 +24,8 @@ async fn radaris_search(name_str: &str) -> Option<String> {
               results.push(result);
           } 
         }
-        println!("results: {:?}", results);
         return Some(results.join("\n"));
     } else {
-        println!("No results found.");
         return Some(String::new());
     }
 }

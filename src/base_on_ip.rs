@@ -17,10 +17,14 @@ pub async fn get_location(ip: &str) -> Option<String> {
     let response = reqwest::get(&url).await.unwrap();
     // check response status
     if !response.status().is_success() {
+        println!("Error: {}", response.status());
         return None;
     }
     let body = response.text().await.unwrap();
     let json: serde_json::Value = serde_json::from_str(&body).unwrap();
-    
-    return Some(json.to_string());
+   //check if the response has a city field
+    if let Some(city) = json.get("city") {
+        return Some(json.to_string());
+    }
+    return None;
 }
