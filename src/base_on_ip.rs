@@ -1,7 +1,5 @@
-use std::fmt::Result;
-use reqwest::{self, Url};
-use config::Config;
 
+use config::Config;
 
 pub async fn get_location(ip: &str) -> Option<String> {
     let mut settings = Config::default();
@@ -23,7 +21,7 @@ pub async fn get_location(ip: &str) -> Option<String> {
     let body = response.text().await.unwrap();
     let json: serde_json::Value = serde_json::from_str(&body).unwrap();
    //check if the response has a city field
-    if let Some(city) = json.get("city") {
+    if let Some(_) = json.get("city") {
         return Some(json.to_string());
     }
     return None;

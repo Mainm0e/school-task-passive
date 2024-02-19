@@ -24,7 +24,7 @@ async fn radaris_search(name_str: &str) -> Option<String> {
               results.push(result);
           } 
         }
-        return Some(results.join("\n"));
+       return Some(results.join("\n"));
     } else {
         return Some(String::new());
     }

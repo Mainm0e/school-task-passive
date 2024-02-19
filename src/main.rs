@@ -96,6 +96,11 @@ async fn write_result(result: Option<String>) -> io::Result<()> {
     let folder_path = "results/";
     
     // Get a list of files in the folder
+    let entries = fs::read_dir(folder_path);
+    // if the folder does not exist, create it
+    if entries.is_err() {
+        fs::create_dir(folder_path)?;
+    }
     let entries = fs::read_dir(folder_path)?;
 
     // Find the latest result file number
