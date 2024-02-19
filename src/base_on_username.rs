@@ -161,6 +161,7 @@ if response.status().is_success() {
 }
 }
 async fn check_instagram(username: &str) -> Option<bool> {
+    // using picuki.com for checking instagram username 
     let url = format!("https://www.picuki.com/profile/{}", username);
     // Create custom headers
     let mut headers = reqwest::header::HeaderMap::new();
@@ -184,7 +185,6 @@ async fn check_instagram(username: &str) -> Option<bool> {
             // Check if the text content of the <h1> element contains the username
             let check_word = format!("@{}", username);
             if element.text().any(|text| text.contains(&check_word)) {
-                println!("Found username: {}", username);
                 // The desired <h1> element is present with the correct username
                 return Some(true);
             }
